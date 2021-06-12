@@ -2,7 +2,7 @@
 Web-UI для Docker. Используя:
 - Django REST Framework
 - Vue.js
-- SDK Docker for Python
+- Docker SDK for Python
 
 # Запуск
 1. Запуск на хосте
@@ -26,3 +26,10 @@ Web-UI для Docker. Используя:
 Base url: unix://var/run/docker.sock
 ```
 
+## TODO:
+- Vue...
+- HTML notification
+- Dockerfile support
+- Docker-compose support
+- Auto deploy script
+- Tests
