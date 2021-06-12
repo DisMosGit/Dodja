@@ -1,0 +1,165 @@
+<template>
+  <div>
+    <h1 class="text-center mt-2">Docker-узел</h1>
+    <b-form @submit="tryUpdate" @reset="onReset" v-if="host" class="mx-auto">
+      <b-form-group
+        id="input-group-title"
+        label="Название:"
+        label-for="title"
+        description=""
+      >
+        <b-form-input
+          id="title"
+          v-model="host.title"
+          type="text"
+          placeholder="Title"
+          required
+        ></b-form-input>
+      </b-form-group>
+
+      <b-form-group
+        id="input-group-description"
+        label="Описание:"
+        label-for="description"
+        description=""
+      >
+        <b-form-input
+          id="description"
+          v-model="host.description"
+          type="text"
+          placeholder="description"
+          required
+        ></b-form-input>
+      </b-form-group>
+
+      <b-form-group
+        id="input-group-credentials"
+        label="Подключение:"
+        label-for="credentials"
+        description=""
+      >
+        <b-form-input
+          id="credentials"
+          v-model="host.credentials.base_url"
+          type="text"
+          placeholder="credentials"
+          required
+        ></b-form-input>
+      </b-form-group>
+      <HintBtn v-bind:hint_key="'test'"></HintBtn>
+      <UserAccess
+        v-for="access in accesses"
+        v-bind:key="access.id"
+        v-bind:access="access"
+      ></UserAccess>
+
+      <b-button-group>
+        <b-button type="submit" variant="success" v-on:click="doUpdate()">
+          Редактировать
+        </b-button>
+        <b-button variant="info" v-on:click="goManager()">
+          Управление
+        </b-button>
+      </b-button-group>
+      <b-button class="position-right" variant="danger" v-on:click="doDelete()">
+        Удалить
+      </b-button>
+    </b-form>
+    <div v-else>Загрузка...</div>
+  </div>
+</template>
+
+<script>
+import { mapGetters, mapActions, mapMutations } from "vuex";
+import DockerBtnLine from "@/components/DockerBtnLine";
+
+export default {
+  name: "HostDetail",
+  components: {
+    DockerBtnLine
+  },
+  data() {
+    return {
+      host: null
+    };
+  },
+  computed: {
+    ...mapGetters(["user", "message"])
+  },
+  methods: {
+    ...mapActions(["updateHost", "deleteHost", "getHostDetail"]),
+    ...mapMutations(["setMsg"]),
+    tryUpdate() {
+      if (this.host.title == "" || false) {
+        this.setMsg("Введите данные");
+      } else {
+        this.updateHost({
+          id: this.host.id,
+          title: this.host.title,
+          description: this.host.description,
+          credentials: this.host.credentials,
+          settings: this.host.settings
+        })
+          .then(response => {
+            this.host = response.data;
+            this.setMsg("Обновлен, " + response.data.title);
+          })
+          .catch(error => {
+            this.setMsg("Введите данные: " + JSON.stringify(error.data.detail));
+          });
+      }
+    },
+    tryDelete() {
+      this.deleteHost({
+        id: this.host.id
+      })
+        .then(response => {
+          this.$router.push({ name: "HostList" });
+          this.setMsg("Удален: " + this.host.title + response.statusText);
+        })
+        .catch(error => {
+          this.setMsg("Введите данные: " + JSON.stringify(error.data.detail));
+        });
+    },
+    getHost() {
+      this.getHostDetail({ id: this.$route.params.id })
+        .then(response => {
+          this.host = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    goDocker: function() {
+      this.$router.push({
+        name: "HostDocker",
+        params: { id: this.host.id }
+      });
+    },
+    goHostList: function() {
+      this.$router
+        .push({
+          name: "HostList"
+        })
+        .catch(function() {});
+    },
+    onReset(event) {
+      event.preventDefault();
+      this.getHost();
+    }
+  },
+  mounted() {
+    this.getHost();
+    console.log("router", this.$route.params);
+  }
+};
+</script>
+
+<style scoped>
+.fvx {
+  margin-left: 18.9rem;
+}
+.xxq {
+  max-width: 40rem;
+}
+</style>
