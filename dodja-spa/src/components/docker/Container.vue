@@ -1,21 +1,34 @@
 <template>
-  <b-jumbotron border-variant="dark" class="col-md-auto m-1 p-1">
-    <h2>
-      <b-badge :variant="this.colors[container.State]">{{
-        container.Id | cut(0, 10)
-      }}</b-badge>
-      {{ container.Names | dockerNames }}
+  <b-jumbotron border-variant="dark" class="col-md-auto m-1 p-1 shadow-sm">
+    <h2 class="text-break">
+      <b-badge :variant="this.colors[container.State]">
+        {{ container.Id | cut(0, 10) }}
+      </b-badge>
+      <p
+        class="text-break m-0"
+        v-for="name in container.Names"
+        v-bind:key="name"
+      >
+        {{ name | cut(1) }}
+      </p>
       <b-badge variant="light">{{ container.Created | toDate("ms") }}</b-badge>
     </h2>
-    <p>{{ container.State }}: {{ container.Status }}</p>
-    <p>{{ container.Image }}: {{ container.ImageID | cut(0, 20) }}</p>
+    <p class="text-break">{{ container.State }}: {{ container.Status }}</p>
+    <p class="text-break">
+      {{ container.Image | cut(0, 32) }}: {{ container.ImageID | cut(0, 20) }}
+    </p>
     <hr class="my-2" />
-    <p>
-      {{ container.Ports | dockerPorts }}
+    <p class="text-break m-0" v-for="port in container.Ports" v-bind:key="port">
+      {{ port.PrivatePort }}->{{ port.IP }}:{{ port.PublicPort }}
     </p>
-    <p>
-      {{ container.Mounts | dockerMounts }}
+    <p
+      class="text-break m-0"
+      v-for="mount in container.Mounts"
+      v-bind:key="mount"
+    >
+      {{ mount.Source }}->{{ mount.Destination }}
     </p>
+    <hr class="my-2" />
     <b-button-group>
       <b-button variant="primary" v-on:click="goDetail()">
         Detail
