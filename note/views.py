@@ -23,4 +23,4 @@ class NoteView(ModelViewSet, HostOperationMixin):
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user,
-                        host=self.kwargs.get("host__pk"))
+                        host_id=self.kwargs.get("host__pk"))
