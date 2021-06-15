@@ -9,13 +9,14 @@
     </h2>
     <div v-if="ping">
       <router-view v-bind:host_id="host_id" />
-      <div>
+      <div class="shadow-sm p-2">
         <input
           type="checkbox"
           name="show"
           v-model="showManager"
           placeholder="show"
         />
+        Show custom Docker command form
         <HostManager v-bind:host_id="host_id" v-show="showManager" />
       </div>
     </div>
@@ -42,7 +43,7 @@ export default {
       ping: null,
       info: null,
       version: null,
-      showManager: true
+      showManager: false
     };
   },
   methods: {

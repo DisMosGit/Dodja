@@ -4,7 +4,7 @@
       <CodeTextarea
         ref="read-result"
         default=""
-        is_read="1"
+        :is_read="true"
         mode="shell"
       ></CodeTextarea>
       <div class="input-group">
@@ -136,7 +136,7 @@ export default {
       this.input.command = "";
       this.input.is_list = false;
       this.input.is_background = false;
-      this.$refs["yaml-to-json"].text = null;
+      this.$refs["yaml-to-json"].text = "args:\n\tkey: value";
     }
   }
 };
