@@ -12,7 +12,23 @@
         v-bind:host_id="host_id"
       ></DockerImage>
     </div>
+    <b-form inline class="container m-2 p-1 shadow">
+      <span>Pull Image:</span>
+      <b-form-input
+        class="m-2"
+        placeholder="Repo"
+        v-model="pull.repository"
+      ></b-form-input>
+      <b-form-input
+        class="m-2"
+        placeholder="Tag"
+        v-model="pull.tag"
+      ></b-form-input>
+
+      <b-button variant="success" @click="tryPull">Pull</b-button>
+    </b-form>
     <div class="container m-2 p-1 shadow">
+      <h3>Build Image</h3>
       <label>Type a dockerfile text</label>
       <CodeTextarea
         ref="build-text"
@@ -35,7 +51,7 @@
         mode="javascript"
       ></CodeTextarea>
       <b-button-group>
-        <b-button @click="tryBuild" variant="primary">
+        <b-button @click="tryBuild" variant="success">
           {{ $tc("build") | capitalize }} {{ $tc("image") | capitalize }}
         </b-button>
         <b-button @click="tryReset" variant="warning">
@@ -62,19 +78,9 @@ export default {
     return {
       image_list: null,
       build_tags: ["example:version"],
-      image: {
-        Containers: -1,
-        Created: 1623666697,
-        Id:
-          "sha256:315ba3f3a4402bd8cc89f66871eda1f606831ef4ce40628b8d2030cc94763914",
-        Labels: null,
-        ParentId:
-          "sha256:8a99bea7b90ca4214454d092da1291ab16ce5bb0693d33eb544c624732955e82",
-        RepoDigests: null,
-        RepoTags: ["e60b9c3b1cf34cd758dfecfe9314d906_celery:latest"],
-        SharedSize: -1,
-        Size: 274706828,
-        VirtualSize: 274706828
+      pull: {
+        repository: "",
+        tag: ""
       }
     };
   },
@@ -147,6 +153,22 @@ export default {
       })
         .then(response => {
           this.$refs["build-result"].addText(response.data);
+          console.log(response);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    tryPull: function() {
+      this.executeHost({
+        id: this.host_id,
+        data: {
+          command: "api.pull",
+          args: this.pull
+        }
+      })
+        .then(response => {
+          this.goRefreshImageList();
           console.log(response);
         })
         .catch(error => {
