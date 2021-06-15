@@ -1,5 +1,12 @@
 <template>
-  <b-card :title="note.id" class="text-center">
+  <b-card class="text-center">
+    <b-card-title
+      ><b-form-input
+        v-model="note.title"
+        placeholder="Enter note title"
+        :readonly="!edit_mode"
+      ></b-form-input
+    ></b-card-title>
     <b-card-sub-title class="mb-2">
       {{ note.date_updated | toDate }}
     </b-card-sub-title>
@@ -12,19 +19,19 @@
       ></b-form-textarea>
     </b-card-text>
     <b-button-group size="sm">
-      <b-button v-if="!edit_mode" variant="success" v-on:click="switchMe()">
+      <b-button v-show="!edit_mode" variant="success" v-on:click="switchMe()">
         Edit
       </b-button>
-      <b-button v-if="!edit_mode" variant="warning" v-on:click="refreshMe()">
+      <b-button v-show="!edit_mode" variant="warning" v-on:click="refreshMe()">
         Refresh
       </b-button>
-      <b-button v-if="edit_mode" variant="success" v-on:click="saveMe()">
+      <b-button v-show="edit_mode" variant="success" v-on:click="saveMe()">
         Save
       </b-button>
-      <b-button v-if="edit_mode" variant="warning" v-on:click="switchMe()">
+      <b-button v-show="edit_mode" variant="warning" v-on:click="switchMe()">
         Cancel
       </b-button>
-      <b-button v-if="edit_mode" variant="danger" v-on:click="deleteMe()">
+      <b-button v-show="edit_mode" variant="danger" v-on:click="deleteMe()">
         Delete
       </b-button>
     </b-button-group>
@@ -32,8 +39,6 @@
 </template>
 
 <script>
-import { mapMutations, mapActions } from "vuex";
-
 export default {
   name: "Note",
   props: ["note"],
@@ -41,18 +46,15 @@ export default {
     return { edit_mode: false };
   },
   methods: {
-    ...mapMutations(["deleteHintByKey"]),
-    ...mapActions([""]),
     deleteMe: function() {
-      console.log("deleteMe");
-      // this.deleteHintByKey(this.hint.key);
+      this.$emit("remove", this.note.id);
     },
     saveMe: function() {
-      console.log("saveMe");
-      // this.deleteHintByKey(this.hint.key);
+      this.$emit("save", this.note);
+      this.switchMe();
     },
     refreshMe: function() {
-      console.log("refreshMe");
+      this.$emit("refresh", this.note.id);
     },
     switchMe: function() {
       this.edit_mode = !this.edit_mode;
