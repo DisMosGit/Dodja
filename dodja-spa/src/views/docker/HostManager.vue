@@ -1,7 +1,12 @@
 <template>
   <div class="border">
     <b-form @submit="tryExecute" @reset="onReset">
-      <ReadTextarea ref="read-result"></ReadTextarea>
+      <CodeTextarea
+        ref="read-result"
+        default=""
+        is_read="1"
+        mode="shell"
+      ></CodeTextarea>
       <div class="input-group">
         <input
           class="form-control"
@@ -14,10 +19,10 @@
           </button>
         </div>
       </div>
-      <YamlTextarea
+      <CodeTextarea
         ref="yaml-to-json"
         default="args:\n\tkey: value"
-      ></YamlTextarea>
+      ></CodeTextarea>
       <div class="input-group input-group-sm background-white" title="Options">
         <div class="input-group-prepend">
           <div class="input-group-text">
@@ -76,15 +81,13 @@
 
 <script>
 import { mapActions } from "vuex";
-import YamlTextarea from "@/components/YamlTextarea";
-import ReadTextarea from "@/components/ReadTextarea";
+import CodeTextarea from "@/components/CodeTextarea";
 
 export default {
   name: "HostManager",
   props: ["host_id"],
   components: {
-    YamlTextarea,
-    ReadTextarea
+    CodeTextarea
   },
   data() {
     return {

@@ -42,10 +42,11 @@
       label-for="credentials"
       description=""
     >
-      <YamlTextarea
+      <CodeTextarea
         ref="yaml-credentials"
         default="key: value\n"
-      ></YamlTextarea>
+        mode="yaml"
+      ></CodeTextarea>
     </b-form-group>
     <b-form-group
       id="input-group-4"
@@ -53,7 +54,11 @@
       label-for="settings"
       description=""
     >
-      <YamlTextarea ref="yaml-settings" default="key: value\n"></YamlTextarea>
+      <CodeTextarea
+        ref="yaml-settings"
+        default="key: value\n"
+        mode="yaml"
+      ></CodeTextarea>
     </b-form-group>
     <b-button-group>
       <b-button @click="tryUpdate" variant="primary">
@@ -71,12 +76,12 @@
 
 <script>
 import { mapActions, mapMutations } from "vuex";
-import YamlTextarea from "@/components/YamlTextarea";
+import CodeTextarea from "@/components/CodeTextarea";
 
 export default {
   name: "HostEdit",
   components: {
-    YamlTextarea
+    CodeTextarea
   },
   model: {
     prop: "host",

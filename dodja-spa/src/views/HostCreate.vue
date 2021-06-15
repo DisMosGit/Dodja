@@ -40,10 +40,11 @@
         label-for="credentials"
         description=""
       >
-        <YamlTextarea
+        <CodeTextarea
           ref="yaml-credentials"
           default="base_url: unix://var/run/docker.sock\nuse_ssh_client: false"
-        ></YamlTextarea>
+          mode="yaml"
+        ></CodeTextarea>
       </b-form-group>
       <b-form-group
         id="input-group-4"
@@ -51,10 +52,11 @@
         label-for="settings"
         description=""
       >
-        <YamlTextarea
+        <CodeTextarea
           ref="yaml-settings"
           default="default_permissions: 777"
-        ></YamlTextarea>
+          mode="yaml"
+        ></CodeTextarea>
       </b-form-group>
       <b-button-group>
         <b-button type="submit" variant="primary">
@@ -71,12 +73,12 @@
 
 <script>
 import { mapActions, mapMutations } from "vuex";
-import YamlTextarea from "@/components/YamlTextarea";
+import CodeTextarea from "@/components/CodeTextarea";
 
 export default {
   name: "HostCreate",
   components: {
-    YamlTextarea
+    CodeTextarea
   },
   data() {
     return {
