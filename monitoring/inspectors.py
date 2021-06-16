@@ -13,7 +13,7 @@ from docker_host.models import Host
 from docker_host.drivers import DockerConnectionPool, DockerJob
 from .serializer import MonitoringConditionExpectedSerializer
 from .models import Monitoring, MonitoringLog, NotificationPreferences
-from .notifiers import get_notifyer, NotifierManager, Message
+# from .notifiers import get_notifyer, NotifierManager, Message
 
 logger = getLogger(__name__)
 
@@ -97,13 +97,13 @@ class Inspector(Compair):
                 is_runtime_error=False,
                 result=checks,
             )
-        if notify and not self.is_passed:
-            NotifierManager(
-                obj_str=str(self.monitoring),
-                checks=self.checks,
-                launch_time=self.launch_time,
-                error=self.error,
-            ).notify(host=self.monitoring.host)
+        # if notify and not self.is_passed:
+        #     NotifierManager(
+        #         obj_str=str(self.monitoring),
+        #         checks=self.checks,
+        #         launch_time=self.launch_time,
+        #         error=self.error,
+        #     ).notify(host=self.monitoring.host)
         return self.is_passed, self.error, self.log
 
     def check_execute_result(self, execute_result: dict,
