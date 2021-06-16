@@ -50,9 +50,77 @@ class Compair():
         return bool(obtained_value not in expected_value)
 
 
-class Inspector(Compair):
+class Checker(Compair):
     split_symbol = "."
 
+    def __init__(self, obtained_result: dict, expected_result: list) -> None:
+        self.obtained_result = obtained_result
+        self.expected_result = expected_result
+        self.result = []
+        self.is_passed = True
+
+    def unpack_obtained_value(self, parameter):
+        value = None
+        value = self.obtained_result
+        for attribute in parameter.split(self.split_symbol):
+            if isinstance(value, dict):
+                value = value.get(attribute)
+            elif isinstance(value, (list, str)):
+                value = value[int(attribute)]
+            else:
+                value = None
+            if value is None:
+                break
+        return value
+
+    def check_condition(self, expected_result):
+        for expected in expected_result:
+            check = False
+            error = ""
+            obtained_value = None
+            try:
+                obtained_value = self.unpack_obtained_value(
+                    expected["parameter"])
+                check = self.compair(
+                    name=expected["comparison"],
+                    expected_value=expected["value"],
+                    obtained_value=obtained_value,
+                )
+                if not check:
+                    self.is_passed = False
+                    error = "Not passed"
+            except Exception as e:
+                check = False
+                self.is_passed = False
+                error = str(e)
+            finally:
+                yield {
+                    "check": check,
+                    "obtained_value": obtained_value,
+                    "expected_value": expected["value"],
+                    "parameter": expected["parameter"],
+                    "comparison": expected["comparison"],
+                    "error": error,
+                }
+
+    def check(self):
+        try:
+            if isinstance(self.expected_result, dict):
+                _expected_result = []
+                _expected_result.append(self.expected_result.copy())
+                for result in self.check_condition(_expected_result):
+                    self.result.append(result)
+            elif isinstance(self.expected_result, list):
+                for result in self.check_condition(
+                        self.expected_result.copy()):
+                    self.result.append(result)
+            else:
+                raise Exception("Сondition not specified")
+        except Exception as e:
+            self.result.append({"check": False, "error": str(e)})
+            self.is_passed = False
+        finally:
+            return self.result, self.is_passed
     def __init__(self, launch_time: datetime, monitoring: Monitoring) -> None:
         self.launch_time = launch_time if launch_time else timezone.now()
         self.end_time = None
