@@ -1,8 +1,13 @@
+from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 import uuid
+
+
+def default_last_launch():
+    return datetime.now() - timedelta(days=7)
 
 
 class Monitoring(models.Model):
@@ -23,8 +28,12 @@ class Monitoring(models.Model):
     is_lock = models.BooleanField(_('is_lock'), default=False)
     date_created = models.DateTimeField(_('date_created'), auto_now_add=True)
     date_updated = models.DateTimeField(_('date_updated'), auto_now=True)
-    last_launch = models.DateTimeField(_('last_launch'), )
-    next_launch = models.DateTimeField(_('next_launch'), )
+    last_launch = models.DateTimeField(_('last_launch'),
+                                       default=default_last_launch)
+    next_launch = models.DateTimeField(_('next_launch'), default=datetime.now)
+
+    def __str__(self):
+        return f"{self.is_active} {self.next_launch} {self.text}"
 
 
 class MonitoringLog(models.Model):
@@ -38,6 +47,9 @@ class MonitoringLog(models.Model):
                                            default=False)
     duration = models.DurationField(_('duration'))
     date_created = models.DateTimeField(_('date_created'), auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.is_passed} {self.date_created}"
 
 
 class NotificationPreferences(models.Model):
