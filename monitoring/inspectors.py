@@ -121,9 +121,14 @@ class Checker(Compair):
             self.is_passed = False
         finally:
             return self.result, self.is_passed
+
+
+class Inspector():
+    check_class = Checker
+
     def __init__(self, launch_time: datetime, monitoring: Monitoring) -> None:
         self.launch_time = launch_time if launch_time else timezone.now()
-        self.end_time = None
+        self._end_time = None
         self.monitoring = monitoring
         self.log = None
         self.lock_task()
@@ -134,32 +139,39 @@ class Checker(Compair):
         self.unlock_task()
 
     @property
+    def end_time(self):
+        return self._end_time if self._end_time else timezone.now()
+
+    @end_time.setter
+    def end_time(self, value: datetime):
+        self._end_time = value
+
+    @property
     def condition(self):
         return self.monitoring.condition
 
     @property
     def duration(self):
-        return (self.end_time
-                if self.end_time else timezone.now()) - self.start_time
+        return self.end_time - self.launch_time
 
     def start(self, save_log: bool = True, notify: bool = False):
         job: DockerJob = DockerConnectionPool(
-            docker_host=self.monitoring).execute(
+            host_id=self.monitoring.host_id).execute(
                 command=self.condition["action"]["command"],
                 is_background=False,
                 **self.condition["action"]["args"],
             )
         self.end_time = timezone.now()
-        self.error = job.error if job.error else None
+        self.error = job["error"] if job["error"] else None
         if self.error:
             self.save_log(
                 is_passed=False,
                 is_runtime_error=True,
-                result={"error": job.error},
+                result={"error": job["error"]},
             )
         else:
             checks, self.is_passed = self.check_execute_result(
-                job.data, self.condition["expected"])
+                job["data"], self.condition["expected"])
             self.save_log(
                 is_passed=self.is_passed,
                 is_runtime_error=False,
@@ -174,52 +186,9 @@ class Checker(Compair):
         #     ).notify(host=self.monitoring.host)
         return self.is_passed, self.error, self.log
 
-    def check_execute_result(self, execute_result: dict,
+    def check_execute_result(self, obtained_result: dict,
                              expected_result: list[dict]):
-        def unpack(value=None, parameter=None, comparison=None):
-            # if value is None or parameter is None or comparison is None:
-            return value, parameter, comparison
-
-        checks = []
-        is_passed = True
-        for number, expected in enumerate(expected_result):
-            check = False
-            error = ""
-            try:
-                value, parameter, comparison = unpack(**expected)
-                execute_value = execute_result
-                for attribute in parameter.split(self.split_symbol):
-                    if isinstance(attribute, dict):
-                        execute_value = execute_result.get(attribute, None)
-                        if execute_value is None:
-                            raise Exception(f"attribute is None")
-                    elif isinstance(attribute, (list, str)):
-                        execute_value = enumerate(execute_result).get(
-                            attribute, None)
-                        if execute_value is None:
-                            raise Exception(f"attribute is None")
-                    else:
-                        raise Exception(f"attribute is None")
-                check = self.compair(
-                    name=comparison,
-                    expected_value=value,
-                    obtained_value=execute_value,
-                )
-                if not check:
-                    is_passed = False
-            except Exception as e:
-                check = False
-                is_passed = False
-                error = str(e)
-            checks.append({
-                "check": check,
-                "execute_value": execute_value,
-                "value": value,
-                "parameter": parameter,
-                "comparison": comparison,
-                "error": error,
-            })
-        return checks, is_passed
+        return self.check_class(obtained_result, expected_result).check()
 
     def unlock_task(self) -> Monitoring:
         self.monitoring.is_lock = False
@@ -239,7 +208,7 @@ class Checker(Compair):
             result=result,
             is_passed=is_passed,
             is_runtime_error=is_runtime_error,
-            date_chedurationcked=self.duration,
+            duration=self.duration,
         )
         self.log.save()
 
@@ -273,7 +242,7 @@ class InspectorPool():
                                      save_log=True,
                                      notify=False)
                 result[host.pk].append((monitoring.id, task_id))
-                return result
+        return result
 
     @classmethod
     def get_host_list(cls) -> QuerySet[Host]:
