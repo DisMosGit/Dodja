@@ -182,6 +182,14 @@ class Inspector(Compair):
         return timedelta(seconds=600) + current_time
 
 
+def create_and_start_inspector(launch_time,
+                               monitoring,
+                               save_log=True,
+                               notify=False):
+    inspector = Inspector(launch_time, monitoring)
+    return inspector.start(save_log, notify)
+
+
 class InspectorPool():
     users: list = []
 
@@ -191,10 +199,11 @@ class InspectorPool():
         for host in self.get_host_list():
             result[host.pk] = []
             for monitoring in self.get_monitoring_list(host):
-                inspector = Inspector(launch_time, monitoring)
-                task_id = async_task(inspector.start,
+                task_id = async_task(create_and_start_inspector,
+                                     launch_time=launch_time,
+                                     monitoring=monitoring,
                                      save_log=True,
-                                     notify=True)
+                                     notify=False)
                 result[host.pk].append((monitoring.id, task_id))
                 return result
 
@@ -210,7 +219,7 @@ class InspectorPool():
             is_active=True,
             is_lock=False,
             next_launch__lte=current_time,
-        ).all()
+        ).all().order_by("priority")
 
 
 def single_run_monitroing():
