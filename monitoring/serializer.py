@@ -4,21 +4,6 @@ from .models import Monitoring, MonitoringLog
 from docker_host.serializer import ActionSerializer
 
 
-class MonitoringSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Monitoring
-        fields = '__all__'
-        read_only_fields = (
-            'id',
-            'creator',
-            'host',
-            'date_created',
-            'date_updated',
-            'last_launch',
-            'next_launch',
-        )
-
-
 class MonitoringLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonitoringLog
@@ -40,7 +25,9 @@ class MonitoringConditionSerializer(serializers.Serializer):
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
-    condition = MonitoringConditionSerializer()
+    condition = MonitoringConditionSerializer(many=True)
+
+    # statistics = serializers.JSONField(default=dict)
 
     class Meta:
         model = Monitoring
