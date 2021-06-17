@@ -1,5 +1,7 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.mixins import DestroyModelMixin
 from django.conf import settings
+from django.db.models import Subquery, Count, OuterRef, F, Q
 from django_q.tasks import schedule, Schedule
 
 from .models import Monitoring, MonitoringLog
@@ -12,6 +14,7 @@ class MonitoringView(ModelViewSet):
     serializer_class = MonitoringSerializer
 
     def get_queryset(self):
+        ## TODO: statistics
         return super().get_queryset().filter(
             host__pk=self.kwargs.get("host__pk")).order_by('priority')
 
@@ -20,15 +23,13 @@ class MonitoringView(ModelViewSet):
                         creator=self.request.user)
 
 
-class MonitoringLogView(ReadOnlyModelViewSet):
+class MonitoringLogView(DestroyModelMixin, ReadOnlyModelViewSet):
     queryset = MonitoringLog.objects.all()
     serializer_class = MonitoringLogSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(
-            host__pk=self.kwargs.get("host__pk"),
-            monitoring__pk=self.kwargs.get("monitoring__pk"),
-        ).order_by('date_created')
+        return super().get_queryset().filter(monitoring__pk=self.kwargs.get(
+            "monitoring__pk"), ).order_by('date_created')
 
     def perform_create(self, serializer):
         serializer.save(monitoring_id=self.kwargs.get("monitoring__pk"))

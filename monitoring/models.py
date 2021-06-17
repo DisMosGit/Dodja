@@ -22,7 +22,7 @@ class Monitoring(models.Model):
                              related_name='monitroing')
     text = models.TextField(_('text'))
     cron_rule = models.CharField(_('cron_rule'), max_length=255)
-    priority = models.BooleanField(_('priority'), default=0)
+    priority = models.IntegerField(_('priority'), default=0)
     condition = models.JSONField(_('condition'))
     is_active = models.BooleanField(_('is_active'), default=False)
     is_lock = models.BooleanField(_('is_lock'), default=False)
