@@ -4,14 +4,19 @@ from django.conf import settings
 from django.db.models import Subquery, Count, OuterRef, F, Q
 from django_q.tasks import schedule, Schedule
 
+from docker_host.permissions import IsHostOperationAllowed, HostOperationMixin
 from .models import Monitoring, MonitoringLog
 from .serializer import MonitoringSerializer, MonitoringLogSerializer
 from .inspectors import single_run_monitroing
 
 
-class MonitoringView(ModelViewSet):
+class MonitoringView(ModelViewSet, HostOperationMixin):
     queryset = Monitoring.objects.all()
     serializer_class = MonitoringSerializer
+    permission_classes = [IsHostOperationAllowed]
+    lookup_field = 'id'
+    permission_kind = "mo"
+    host_pk = "host__pk"
 
     def get_queryset(self):
         ## TODO: statistics
@@ -23,9 +28,14 @@ class MonitoringView(ModelViewSet):
                         creator=self.request.user)
 
 
-class MonitoringLogView(DestroyModelMixin, ReadOnlyModelViewSet):
+class MonitoringLogView(DestroyModelMixin, ReadOnlyModelViewSet,
+                        HostOperationMixin):
     queryset = MonitoringLog.objects.all()
     serializer_class = MonitoringLogSerializer
+    permission_classes = [IsHostOperationAllowed]
+    lookup_field = 'id'
+    permission_kind = "ml"
+    host_pk = "host__pk"
 
     def get_queryset(self):
         return super().get_queryset().filter(monitoring__pk=self.kwargs.get(
