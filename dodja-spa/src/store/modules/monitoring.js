@@ -5,12 +5,12 @@ export default {
   getters: {},
   mutations: {},
   actions: {
-    createMonitoring: async (context, payload) => {
+    createMonitoringTask: async (context, payload) => {
       return new Promise((resolve, reject) => {
         axios
           .post(
             `/api/host/${payload.host_id}/monitoring/?format=json`,
-            payload,
+            payload.data,
             {
               headers: {
                 Authorization: context.rootGetters.auth_header
@@ -26,11 +26,11 @@ export default {
           });
       });
     },
-    getMonitoringList: async (context, payload) => {
+    getMonitoringTaskList: async (context, payload) => {
       return new Promise((resolve, reject) => {
         axios
           .get(`/api/host/${payload.host_id}/monitoring/?format=json`, {
-            params: payload,
+            params: payload.params,
             headers: {
               Authorization: context.rootGetters.auth_header
             }
@@ -44,13 +44,13 @@ export default {
           });
       });
     },
-    getMonitoringDetail: async (context, payload) => {
+    getMonitoringTaskDetail: async (context, payload) => {
       return new Promise((resolve, reject) => {
         axios
           .get(
             `/api/host/${payload.host_id}/monitoring/${payload.id}/?format=json`,
             {
-              data: payload,
+              params: payload.params,
               headers: {
                 Authorization: context.rootGetters.auth_header
               }
@@ -64,12 +64,12 @@ export default {
           });
       });
     },
-    updateMonitoring: async (context, payload) => {
+    updateMonitoringTask: async (context, payload) => {
       return new Promise((resolve, reject) => {
         axios
           .patch(
             `/api/host/${payload.host_id}/monitoring/${payload.id}/?format=json`,
-            payload,
+            payload.data,
             {
               headers: {
                 Authorization: context.rootGetters.auth_header
@@ -84,13 +84,13 @@ export default {
           });
       });
     },
-    deleteMonitoring: async (context, payload) => {
+    deleteMonitoringTask: async (context, payload) => {
       return new Promise((resolve, reject) => {
         axios
           .delete(
             `/api/host/${payload.host_id}/monitoring/${payload.id}/?format=json`,
             {
-              params: payload,
+              params: payload.params,
               headers: {
                 Authorization: context.rootGetters.auth_header
               }

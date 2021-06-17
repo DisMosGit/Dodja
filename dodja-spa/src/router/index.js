@@ -52,12 +52,6 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "HostDetail" */ "../views/HostDetail.vue"),
     children: [
-      // {
-      //   path: "/host/:id/edit",
-      //   name: "HostEdit",
-      //   component: () =>
-      //     import(/* webpackChunkName: "HostEdit" */ "../views/HostEdit.vue")
-      // },
       {
         path: "/host/:id/monitoring",
         name: "HostMonitoring",
@@ -67,12 +61,30 @@ const routes = [
           )
       },
       {
+        path: "/host/:id/monitoring/create",
+        name: "HostMonitoringCreate",
+        component: () =>
+          import(
+            /* webpackChunkName: "HostMonitoringCreate" */ "../views/HostMonitoringCreate.vue"
+          )
+      },
+      {
         path: "/host/:id/monitoring/:task",
         name: "HostMonitoringTask",
         component: () =>
           import(
             /* webpackChunkName: "HostMonitoringTask" */ "../views/HostMonitoringTask.vue"
           )
+        // children: [
+        //   {
+        //     path: "logs",
+        //     name: "HostMonitoringTaskLogs",
+        //     component: () =>
+        //       import(
+        //         /* webpackChunkName: "HostMonitoringTaskLogs" */ "../views/docker/HostMonitoringTaskLogs.vue"
+        //       )
+        //   }
+        // ]
       },
       {
         path: "/host/:id/docker",
