@@ -48,8 +48,21 @@ Vue.filter("dockerMounts", function(value) {
 });
 
 Vue.filter("toDate", function(value, type) {
-  if (!type) return new Date(value).toLocaleDateString();
-  else if (type === "ms") return new Date(value * 1000).toLocaleDateString();
+  if (type[0] === "m") {
+    value = new Date(value * 1000);
+  } else {
+    value = new Date(value);
+  }
+  switch (type) {
+    case "time":
+      return value.toLocaleTimeString();
+    case "utc":
+      return value.toUTCString();
+    case "locl":
+      return value.toLocaleString();
+    default:
+      return value.toLocaleDateString();
+  }
 });
 
 Vue.filter("getValue", function(value, find_key) {
