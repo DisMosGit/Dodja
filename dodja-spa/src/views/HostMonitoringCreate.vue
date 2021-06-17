@@ -19,10 +19,19 @@
         ></b-form-input>
       </b-form-group>
 
+      <b-form-group :label="$tc('priority') | capitalize" description="">
+        <b-form-input
+          v-model="input.priority"
+          type="text"
+          placeholder="priority"
+          required
+        ></b-form-input>
+      </b-form-group>
+
       <b-form-group :label="$tc('condition') | capitalize" description="">
         <CodeTextarea
           ref="yaml-condition"
-          default="- action:\n\tcommand: api.ping\n\targs: {}\n  expected:\n\tvalue: true\n\tparameter: state\n\tcomparison: eq\n#- action: ..."
+          default="action:\n\tcommand: api.ping\n\targs: {}\nexpected:\n\t- value: true\n\t  parameter: state\n\t  comparison: eq\n\t#- value: true\n\t  #parameter: state\n\t  #comparison: eq"
           mode="yaml"
         ></CodeTextarea>
       </b-form-group>
@@ -51,7 +60,8 @@ export default {
     return {
       input: {
         text: "ping",
-        cron_rule: "*/5 * * * *"
+        cron_rule: "*/5 * * * *",
+        priority: 0
       }
     };
   },

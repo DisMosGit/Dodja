@@ -12,12 +12,13 @@
       last launch: {{ task.last_launch | toDate("locl") }}
     </p>
     <hr class="my-2" />
+    <p>{{ task.condition.action.command }}</p>
     <p
       class="text-break m-0"
-      v-for="condition in task.condition"
-      v-bind:key="condition.action.command"
+      v-for="(expected, index) in task.condition.expected"
+      v-bind:key="index"
     >
-      {{ condition.action.command }}
+      {{ expected.parameter }}
     </p>
     <hr class="my-2" />
     <b-button-group>
