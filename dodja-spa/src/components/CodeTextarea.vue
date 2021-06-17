@@ -90,7 +90,7 @@ export default {
       }
     );
     this.editor.setValue(
-      this.default.replace("\\n", "\n").replace("\\t", "    ")
+      this.default.replace(/\\n/g, "\n").replace(/\\t/g, "    ")
     );
     this.editor.setSize(null, this.height);
   },
