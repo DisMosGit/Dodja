@@ -21,11 +21,11 @@ class MonitoringConditionExpectedSerializer(serializers.Serializer):
 
 class MonitoringConditionSerializer(serializers.Serializer):
     action = ActionSerializer()
-    expected = MonitoringConditionExpectedSerializer()
+    expected = MonitoringConditionExpectedSerializer(many=True)
 
 
 class MonitoringSerializer(serializers.ModelSerializer):
-    condition = MonitoringConditionSerializer(many=True)
+    condition = MonitoringConditionSerializer()
 
     # statistics = serializers.JSONField(default=dict)
 

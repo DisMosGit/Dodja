@@ -1,17 +1,13 @@
-from time import sleep
-from typing import Callable
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from datetime import timedelta, datetime
-from threading import Thread
-from django_q.tasks import result, schedule, async_task, async_iter
-import docker
+from django_q.tasks import async_task
 from logging import getLogger
 from django.conf import settings
+from croniter import croniter
 
 from docker_host.models import Host
 from docker_host.drivers import DockerConnectionPool, DockerJob
-from .serializer import MonitoringConditionExpectedSerializer
 from .models import Monitoring, MonitoringLog, NotificationPreferences
 # from .notifiers import get_notifyer, NotifierManager, Message
 
@@ -213,10 +209,9 @@ class Inspector():
         self.log.save()
 
     def _calculate_next_launch(self, cron_rule: str, current_time):
-        # TODO: add cron parser
         if cron_rule.isdigit():
             return timedelta(seconds=int(cron_rule)) + current_time
-        return timedelta(seconds=600) + current_time
+        return croniter(cron_rule, current_time).get_next(datetime)
 
 
 def create_and_start_inspector(launch_time,
