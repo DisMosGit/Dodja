@@ -9,7 +9,7 @@ export default {
       return new Promise((resolve, reject) => {
         axios
           .get(
-            `/api/host/${payload.host_id}/monitoring/${payload.monitoring_id}/log/?format=json`,
+            `/api/host/${payload.host_id}/monitoring/${payload.id}/log/?format=json`,
             {
               params: payload.params,
               headers: {
@@ -30,7 +30,7 @@ export default {
       return new Promise((resolve, reject) => {
         axios
           .get(
-            `/api/host/${payload.host_id}/monitoring/${payload.monitoring_id}/log/${payload.id}?format=json`,
+            `/api/host/${payload.host_id}/monitoring/${payload.id}/log/${payload.log_id}?format=json`,
             {
               params: payload.params,
               headers: {
@@ -50,7 +50,7 @@ export default {
       return new Promise((resolve, reject) => {
         axios
           .delete(
-            `/api/host/${payload.host_id}/monitoring/${payload.monitoring_id}/log/${payload.id}?format=json`,
+            `/api/host/${payload.host_id}/monitoring/${payload.id}/log/${payload.log_id}?format=json`,
             {
               params: payload.params,
               headers: {
