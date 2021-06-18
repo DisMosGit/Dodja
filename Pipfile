@@ -18,6 +18,7 @@ django-allauth = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
 django-q = "*"
+croniter = "*"
 
 [requires]
 python_version = "3.9"
