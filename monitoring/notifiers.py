@@ -1,8 +1,9 @@
+from datetime import datetime
 from logging import getLogger
 
 from django.db.models.query_utils import Q
 from django.core.mail import send_mail
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from utils.renderers import DockerJSONEncoder
 
@@ -86,19 +87,20 @@ class HTMLNotifier(Notifier):
 class NotifierManager():
     _send_types = {
         0: "",
-        1: "all",
-        2: "email",
-        3: "html",
+        1: "email",
+        2: "html",
+        3: "all",
     }
     notifyer_classes = (Notifier, EmailNotifier, HTMLNotification)
 
     def __init__(self, **kwargs) -> None:
         self.message = Message(**kwargs)
 
-    def notify(self, host: Host = None, user_id_list: list = None, **kwargs):
-        for preferenses in self.get_user_preferenses_list(host, user_id_list):
+    def notify(self, host_id: str = None, user_id_list: list = None, **kwargs):
+        for preferenses in self.get_user_preferenses_list(
+                host_id, user_id_list):
             try:
-                kind = self.get_kind(preferenses.send_type)
+                kind = self.get_kind(preferenses.user)
                 notifier = self.get_notifyer(kind)
                 notifier(self.message).send_message(preferenses.user, **kwargs)
             except:
@@ -107,10 +109,10 @@ class NotifierManager():
 
     def get_user_preferenses_list(
         self,
-        host: Host = None,
+        host_id: str = None,
         user_id_list: list = None,
-    ) -> list[NotificationPreferences]:
-        if host:
+    ) -> list[Access]:
+        if host_id:
             if user_id_list:
                 pass
                 # Access.objects.filter(host=host, user)
@@ -119,12 +121,22 @@ class NotifierManager():
                 # Q(accesses__gte=1) | Q(hosts=host)).all()
             else:
                 return Access.objects.filter(
-                    Q(user__accesses__gte=1)
-                    | Q(user__hosts=host)).select_related('user').all()
+                    Q(host__id=host_id)
+                    | Q(user__hosts__id=host_id)).select_related('user').all()
         elif user_id_list:
             pass
         else:
             return []
+
+    def get_kind_by_user(self, user: AbstractUser) -> Notifier:
+        if user.last_login > datetime.now() - settings.ACCESS_TOKEN_LIFETIME:
+            if user.email:
+                return self._send_types.get(3, "")
+            else:
+                return self._send_types.get(2, "")
+        elif user.email:
+            return self._send_types.get(1, "")
+        return self._send_types.get(0, "")
 
     def get_kind(self, send_type: int) -> Notifier:
         # TODO: byte calculcations
