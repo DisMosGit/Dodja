@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import timedelta
+from django.utils import timezone
 from logging import getLogger
 
 from django.db.models.query_utils import Q
 from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from utils.renderers import DockerJSONEncoder
 
@@ -40,9 +42,19 @@ class Message():
     @property
     def dict(self) -> dict:
         return {
-            "subject": f'{self.obj_str} ERROR at {self.launch_time}',
-            "message": str(self.checks)
+            "subject":
+            f'{self.obj_str} ERROR',
+            "message":
+            f'{self.checks} | reason: {self.error} | at {self.launch_time}'
         }
+
+    @property
+    def subject(self) -> str:
+        return f'{self.obj_str} ERROR at {self.launch_time}'
+
+    @property
+    def message(self) -> str:
+        return f'{self.checks} {self.error}'
 
 
 class Notifier():
@@ -51,37 +63,39 @@ class Notifier():
     def __init__(self, message) -> None:
         self.message: Message = message
 
-    def send_message(self, user: User, **kwargs):
-        raise NotImplementedError()
+    def send_message(self, user: AbstractUser, **kwargs):
+        pass
 
 
 class EmailNotifier(Notifier):
     kind = "email"
 
-    def send_message(self, user: User, **kwargs):
-        pass
-        send_mail(
-            **self.message.to_dict(),
-            settings.EMAIL_HOST,
-            (user.email, ),
-            fail_silently=False,
-        )
+    def send_message(self, user: AbstractUser, **kwargs):
+        print("eee")
+        # send_mail(self.message.subject, self.message.message,
+        #           settings.EMAIL_HOST_USER, (user.email, ))
 
 
 class HTMLNotifier(Notifier):
     kind = "html"
 
-    @property
-    def _host_id(self):
-        return self.message.get("host_id")
-
-    def send_message(self, user: User, **kwargs):
-        HTMLNotification(
-            user=user,
-            host__id=self._host_id,
+    def send_message(self, user: AbstractUser, **kwargs):
+        n = HTMLNotification(
             message=self.message.json,
-            date_expire=kwargs.get("date_expire", None),
-        ).save()
+            date_expire=kwargs.get("date_expire",
+                                   timezone.now() - timedelta(days=1)),
+        )
+        n.save()
+        n.users.add(user)
+
+
+class AllNotifier(Notifier):
+    kind = "all"
+    notifyer_classes = (EmailNotifier, HTMLNotifier)
+
+    def send_message(self, user: AbstractUser, **kwargs):
+        for notifier in self.notifyer_classes:
+            notifier(self.message).send_message(user, **kwargs)
 
 
 class NotifierManager():
@@ -91,7 +105,8 @@ class NotifierManager():
         2: "html",
         3: "all",
     }
-    notifyer_classes = (Notifier, EmailNotifier, HTMLNotification)
+
+    notifyer_classes = (Notifier, EmailNotifier, HTMLNotifier, AllNotifier)
 
     def __init__(self, **kwargs) -> None:
         self.message = Message(**kwargs)
@@ -100,18 +115,19 @@ class NotifierManager():
         for preferenses in self.get_user_preferenses_list(
                 host_id, user_id_list):
             try:
-                kind = self.get_kind(preferenses.user)
-                notifier = self.get_notifyer(kind)
-                notifier(self.message).send_message(preferenses.user, **kwargs)
-            except:
-                logger.error('notify error')
+                notifier = self.get_notifyer(
+                    self.get_kind_by_user(preferenses))
+                notifier(self.message).send_message(preferenses, **kwargs)
+            except Exception as e:
+                logger.error(f'notify error {str(e)}')
         return True
 
     def get_user_preferenses_list(
         self,
         host_id: str = None,
         user_id_list: list = None,
-    ) -> list[Access]:
+    ) -> list[AbstractUser]:
+
         if host_id:
             if user_id_list:
                 pass
@@ -120,16 +136,17 @@ class NotifierManager():
                 # User.objects.filter(
                 # Q(accesses__gte=1) | Q(hosts=host)).all()
             else:
-                return Access.objects.filter(
-                    Q(host__id=host_id)
-                    | Q(user__hosts__id=host_id)).select_related('user').all()
+                return get_user_model().objects.filter(
+                    Q(accesses__host__id=host_id)
+                    | Q(hosts__id=host_id)).all()
         elif user_id_list:
             pass
         else:
             return []
 
     def get_kind_by_user(self, user: AbstractUser) -> Notifier:
-        if user.last_login > datetime.now() - settings.ACCESS_TOKEN_LIFETIME:
+        if user.last_login > timezone.now(
+        ) - settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]:
             if user.email:
                 return self._send_types.get(3, "")
             else:
