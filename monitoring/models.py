@@ -72,11 +72,9 @@ def default_date_expire():
 
 class HTMLNotification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    host = models.ForeignKey('docker_host.Host',
-                             verbose_name=_('host'),
-                             on_delete=models.CASCADE,
-                             related_name='html_notifications')
-    users = models.JSONField(_('users'))
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL,
+                                   verbose_name=_('user'),
+                                   related_name="html_notifications")
     message = models.JSONField(_('message'))
     date_expire = models.DateTimeField(_('date_created'),
                                        default=default_date_expire)
