@@ -162,7 +162,8 @@ ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'jwt-auth'
-REST_SESSION_LOGIN = False
+REST_SESSION_LOGIN = True
+JWT_AUTH_RETURN_EXPIRATION = True
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
@@ -189,3 +190,8 @@ Q_CLUSTER = {
 }
 
 MONITORING_LAUNCHER = "monitoring.inspectors.single_run_monitroing"
+
+try:
+    from mysite.local_settings import *
+except ImportError:
+    pass
