@@ -1,15 +1,16 @@
+from datetime import timedelta, datetime
+from logging import getLogger
+
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from datetime import timedelta, datetime
-from django_q.tasks import async_task
-from logging import getLogger
 from django.conf import settings
+from django_q.tasks import async_task
 from croniter import croniter
 
 from docker_host.models import Host
 from docker_host.drivers import DockerConnectionPool, DockerJob
-from .models import Monitoring, MonitoringLog, NotificationPreferences
-# from .notifiers import get_notifyer, NotifierManager, Message
+from monitoring.models import Monitoring, MonitoringLog, NotificationPreferences
+from monitoring.notifiers import NotifierManager, Message
 
 logger = getLogger(__name__)
 
@@ -159,6 +160,7 @@ class Inspector():
             )
         self.end_time = timezone.now()
         self.error = job["error"] if job["error"] else None
+        checks = []
         if self.error:
             self.save_log(
                 is_passed=False,
@@ -173,13 +175,13 @@ class Inspector():
                 is_runtime_error=False,
                 result=checks,
             )
-        # if notify and not self.is_passed:
-        #     NotifierManager(
-        #         obj_str=str(self.monitoring),
-        #         checks=self.checks,
-        #         launch_time=self.launch_time,
-        #         error=self.error,
-        #     ).notify(host=self.monitoring.host)
+        if notify and not self.is_passed:
+            NotifierManager(
+                obj_str=str(self.monitoring.text),
+                checks=checks,
+                launch_time=self.launch_time,
+                error=self.error,
+            ).notify(host_id=self.monitoring.host_id)
         return self.is_passed, self.error, self.log
 
     def check_execute_result(self, obtained_result: dict,
@@ -190,12 +192,12 @@ class Inspector():
         self.monitoring.is_lock = False
         self.monitoring.next_launch = self._calculate_next_launch(
             self.monitoring.cron_rule, self.end_time)
-        self.monitoring.save()
+        self.monitoring.save(update_fields=("next_launch", "is_lock"))
 
     def lock_task(self) -> Monitoring:
         self.monitoring.is_lock = True
         self.monitoring.last_launch = self.launch_time
-        self.monitoring.save()
+        self.monitoring.save(update_fields=("last_launch", "is_lock"))
 
     def save_log(self, is_passed: bool, is_runtime_error: bool,
                  result: dict) -> MonitoringLog:
@@ -235,7 +237,7 @@ class InspectorPool():
                                      launch_time=launch_time,
                                      monitoring=monitoring,
                                      save_log=True,
-                                     notify=False)
+                                     notify=True)
                 result[host.pk].append((monitoring.id, task_id))
         return result
 
@@ -255,7 +257,6 @@ class InspectorPool():
 
 
 def single_run_monitroing():
-    # TODO: fetch users
     try:
         return InspectorPool().start()
     except Exception as e:
