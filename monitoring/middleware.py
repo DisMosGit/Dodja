@@ -1,7 +1,11 @@
+from uuid import uuid4, UUID
+from django.db.models.query import QuerySet
+
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.response import Response
-from uuid import uuid4, UUID
+
 from .models import HTMLNotification
+from utils.renderers import DockerJSONEncoder
 
 
 class HTMLNotifierMiddleware(MiddlewareMixin):
@@ -20,29 +24,22 @@ class HTMLNotifierMiddleware(MiddlewareMixin):
         user,
         host_id: str,
     ) -> list[dict]:
-        if host_id:
-            return HTMLNotification.objects.filter(
-                host__id=host_id, user=user).all().values(
-                    'message', 'date_created').order_by('date_created')
-        else:
-            return HTMLNotification.objects.filter(user=user).all().values(
-                'message', 'date_created').order_by('date_created')
+        notifications = HTMLNotification.objects.filter(users=user).all()
+        result = DockerJSONEncoder().encode(
+            notifications.values('message',
+                                 'date_created').order_by('-date_created'))
+        for n in notifications:
+            if len(n.users.all()) >= 2:
+                n.users.remove(user)
+            else:
+                n.delete()
+        return result
 
     def process_response(self, request, response: Response):
         if response.status_code:
             host_id = request.headers.get("X-WEBPUSH", None)
-            # TODO: remove sended
             if host_id:
-                # user = request
-                if host_id == "all":
-                    response["X-WEBPUSH"] = self._get_notifications_dict(
-                        user=request.user, host_id=None)
-                elif self._is_validate_uuid(host_id):
-                    response["X-WEBPUSH"] = self._get_notifications_dict(
-                        user=request.user, host_id=host_id)
-                else:
-                    response["X-WEBPUSH"] = [{
-                        "message": "error",
-                        "date_created": None
-                    }]
+                notifications = self._get_notifications_dict(user=request.user,
+                                                             host_id=None)
+                response["X-WEBPUSH"] = notifications
         return response
