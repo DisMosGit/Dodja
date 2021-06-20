@@ -36,7 +36,7 @@ class HTMLNotifierMiddleware(MiddlewareMixin):
         return result
 
     def process_response(self, request, response: Response):
-        if response.status_code:
+        if response.status_code == 200 and request.user.is_authenticated:
             host_id = request.headers.get("X-WEBPUSH", None)
             if host_id:
                 notifications = self._get_notifications_dict(user=request.user,

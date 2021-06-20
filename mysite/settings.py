@@ -32,9 +32,16 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
-    "Allow",
-    "Vary",
-    "Access-Control-Allow-Origin",
+    'Allow',
+    'Vary',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Expose-Headers',
+    'X-WEBPUSH',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'X-WEBPUSH',
+    'Access-Control-Expose-Headers',
 ]
 
 CORS_ALLOW_METHODS = [
