@@ -3,6 +3,7 @@ from django.views.generic.base import RedirectView
 from django.urls import path, include, re_path
 from django.contrib import admin
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from rest_framework.routers import DefaultRouter
 
@@ -67,7 +68,7 @@ urlpatterns = [
     path('api-auth/json/', include('dj_rest_auth.urls')),
     path('api-auth/json/registration/',
          include('dj_rest_auth.registration.urls')),
-    # re_path(r'^favicon\.ico$',
-    #         RedirectView.as_view(url='static/favicon.ico', permanent=True)),
-    # static(settings.STATIC_URL, document_root=settings.STATIC_DIR)
-] + static(settings.STATIC_URL, document_root=settings.STATIC_DIR)
+    re_path(r'^favicon\.ico$',
+            RedirectView.as_view(url='static/favicon.ico', permanent=True)),
+] + static(settings.MEDIA_URL,
+           document_root=settings.MEDIA_ROOT) + staticfiles_urlpatterns()
