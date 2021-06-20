@@ -28,33 +28,17 @@ class Message():
         pass
 
     @property
-    def text(self) -> str:
-        return f'{self.obj_str} ERROR at {self.launch_time}\n'
-
-    @property
-    def json(self) -> str:
-        return DockerJSONEncoder().encode(self.dict)
-
-    @property
-    def html(self) -> str:
-        return f'<h2>{self.obj_str} ERROR at {self.launch_time}</h2>'
-
-    @property
-    def dict(self) -> dict:
-        return {
-            "subject":
-            f'{self.obj_str} ERROR',
-            "message":
-            f'{self.checks} | reason: {self.error} | at {self.launch_time}'
-        }
-
-    @property
     def subject(self) -> str:
-        return f'{self.obj_str} ERROR at {self.launch_time}'
+        return f'Dodja {self.obj_str} ERROR'
 
     @property
     def message(self) -> str:
-        return f'{self.checks} {self.error}'
+        msg = f'{self.launch_time}\n{self.error}' if self.error else f'{self.launch_time}'
+        if isinstance(self.checks, list):
+            for check in self.checks:
+                msg += f'\n{"✓" if check.get("check") else "✕"}|'
+                msg += f'{check.get("parameter", "")}→{check.get("obtained_value", "")}~{check.get("error", "")}'
+        return msg
 
 
 class Notifier():
@@ -71,9 +55,8 @@ class EmailNotifier(Notifier):
     kind = "email"
 
     def send_message(self, user: AbstractUser, **kwargs):
-        print("eee")
-        # send_mail(self.message.subject, self.message.message,
-        #           settings.EMAIL_HOST_USER, (user.email, ))
+        send_mail(self.message.subject, self.message.message,
+                  settings.EMAIL_HOST_USER, (user.email, ))
 
 
 class HTMLNotifier(Notifier):
@@ -81,7 +64,8 @@ class HTMLNotifier(Notifier):
 
     def send_message(self, user: AbstractUser, **kwargs):
         n = HTMLNotification(
-            message=self.message.json,
+            subject=self.message.subject,
+            message=self.message.message,
             date_expire=kwargs.get("date_expire",
                                    timezone.now() - timedelta(days=1)),
         )

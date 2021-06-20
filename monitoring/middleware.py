@@ -26,7 +26,7 @@ class HTMLNotifierMiddleware(MiddlewareMixin):
     ) -> list[dict]:
         notifications = HTMLNotification.objects.filter(users=user).all()
         result = DockerJSONEncoder().encode(
-            notifications.values('message',
+            notifications.values('subject', 'message',
                                  'date_created').order_by('-date_created'))
         for n in notifications:
             if len(n.users.all()) >= 2:

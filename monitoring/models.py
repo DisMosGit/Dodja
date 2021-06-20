@@ -75,7 +75,8 @@ class HTMLNotification(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                    verbose_name=_('user'),
                                    related_name="html_notifications")
-    message = models.JSONField(_('message'))
+    message = models.TextField(_('message'))
+    subject = models.CharField(_('subject'), max_length=255, default="Dodja")
     date_expire = models.DateTimeField(_('date_created'),
                                        default=default_date_expire)
     date_created = models.DateTimeField(_('date_created'), auto_now_add=True)
