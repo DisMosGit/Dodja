@@ -17,18 +17,58 @@ Vue.use(Vuex);
 axios.defaults.baseURL =
   window.location.protocol + "//" + window.location.hostname + ":" + "8000";
 
-// axios.interceptors.response.use(
-//   function(response) {
-//     return response;
-//   },
-//   function(error) {
-//     if (error.response.status == 401) {
-//       localStorage.removeItem("user");
-//       location.reload();
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+function notifyMe(title, text) {
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+  } else if (Notification.permission === "granted") {
+    new Notification(title, {
+      body: text,
+      icon: axios.defaults.baseURL + "/static/favicon.ico"
+    });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission(function(permission) {
+      if (permission === "granted") {
+        new Notification(title, {
+          body: text,
+          icon: axios.defaults.baseURL + "/static/favicon.ico"
+        });
+      }
+    });
+  }
+}
+
+axios.interceptors.request.use(
+  function(request) {
+    request.headers.common["Access-Control-Expose-Headers"] = "X-WEBPUSH, ";
+    request.headers.common["X-WEBPUSH"] = "all";
+    return request;
+  },
+  function(error) {
+    return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  function(response) {
+    if (response.headers["x-webpush"]) {
+      try {
+        JSON.parse(response.headers["x-webpush"]).forEach(element => {
+          notifyMe(element.subject, element.message);
+        });
+      } catch (err) {
+        console.log("push error", err);
+      }
+    }
+    return response;
+  },
+  function(error) {
+    if (error.response.status == 401) {
+      localStorage.removeItem("user");
+      location.reload();
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default new Vuex.Store({
   state: {

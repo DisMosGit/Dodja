@@ -116,7 +116,6 @@ export default {
     return {
       interval: null,
       menuVisible: false,
-      notification: null,
       options: [
         { value: "en", text: "EN" },
         { value: "ru", text: "РУС" }
@@ -145,25 +144,6 @@ export default {
         new Date(this.last_refresh.getTime() + 60000 * 15) <= new Date()
       ) {
         this.refreshToken();
-      }
-    },
-    notifyMe: function(title, text) {
-      if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
-      } else if (Notification.permission === "granted") {
-        this.notification = new Notification(title, {
-          body: text,
-          icon: "http://localhost:8000/static/favicon.ico"
-        });
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission(function(permission) {
-          if (permission === "granted") {
-            this.notification = new Notification(title, {
-              body: text,
-              icon: "http://localhost:8000/static/favicon.ico"
-            });
-          }
-        });
       }
     }
   },
