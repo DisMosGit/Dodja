@@ -85,7 +85,7 @@ class Checker(Compair):
                 )
                 if not check:
                     self.is_passed = False
-                    error = "Not passed"
+                    error = "Failure"
             except Exception as e:
                 check = False
                 self.is_passed = False
@@ -97,7 +97,7 @@ class Checker(Compair):
                     "expected_value": expected["value"],
                     "parameter": expected["parameter"],
                     "comparison": expected["comparison"],
-                    "error": error,
+                    "error": error if error else "",
                 }
 
     def check(self):
@@ -152,14 +152,17 @@ class Inspector():
         return self.end_time - self.launch_time
 
     def start(self, save_log: bool = True, notify: bool = False):
-        job: DockerJob = DockerConnectionPool(
-            host_id=self.monitoring.host_id).execute(
-                command=self.condition["action"]["command"],
-                is_background=False,
-                **self.condition["action"]["args"],
-            )
-        self.end_time = timezone.now()
-        self.error = job["error"] if job["error"] else None
+        try:
+            job: DockerJob = DockerConnectionPool(
+                host_id=self.monitoring.host_id).execute(
+                    command=self.condition["action"]["command"],
+                    is_background=False,
+                    **self.condition["action"]["args"],
+                )
+            self.end_time = timezone.now()
+            self.error = job["error"] if job["error"] else ""
+        except Exception as e:
+            self.error = str(e)
         checks = []
         if self.error:
             self.save_log(
