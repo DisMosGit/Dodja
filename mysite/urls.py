@@ -3,6 +3,7 @@ from django.views.generic.base import RedirectView
 from django.urls import path, include, re_path
 from django.contrib import admin
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from rest_framework.routers import DefaultRouter
 
@@ -70,4 +71,5 @@ urlpatterns = [
     # re_path(r'^favicon\.ico$',
     #         RedirectView.as_view(url='static/favicon.ico', permanent=True)),
     # static(settings.STATIC_URL, document_root=settings.STATIC_DIR)
-] + static(settings.STATIC_URL, document_root=settings.STATIC_DIR)
+] + static(settings.MEDIA_URL,
+           document_root=settings.MEDIA_ROOT) + staticfiles_urlpatterns()
