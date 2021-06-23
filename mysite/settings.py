@@ -14,6 +14,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
     "http://192.168.0.100",
     "http://localhost",
+    "https://x.dismos.info",
+    "https://x-api.dismos.info"
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
