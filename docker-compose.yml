@@ -8,5 +8,18 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - db_volume:/app/db/
       - /var/run/docker.sock:/var/run/docker.sock
+
+  qcluster:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["qcluster"]
+    volumes:
+      - db_volume:/app/db/
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+volumes:
+  db_volume:
