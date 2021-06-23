@@ -70,6 +70,5 @@ urlpatterns = [
          include('dj_rest_auth.registration.urls')),
     # re_path(r'^favicon\.ico$',
     #         RedirectView.as_view(url='static/favicon.ico', permanent=True)),
-    # static(settings.STATIC_URL, document_root=settings.STATIC_DIR)
-] + static(settings.MEDIA_URL,
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,
            document_root=settings.MEDIA_ROOT) + staticfiles_urlpatterns()
