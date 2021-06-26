@@ -19,12 +19,6 @@
     >
       {{ mount.Source }}->{{ mount.Destination }}:{{ mount.Mode }}
     </p>
-    <!-- <p>
-      {{ container.Ports | dockerPorts }}
-    </p>
-    <p>
-      {{ container.Mounts | dockerMounts }}
-    </p> -->
     <b-form>
       <b-form-textarea
         id="input-cmd-text"
@@ -32,12 +26,7 @@
         plaintext
         class="border rounded border-secondary"
       ></b-form-textarea>
-      <b-form-group
-        id="input-cmd-group"
-        label-for="input-cmd"
-        class="border"
-        description="Type a command."
-      >
+      <b-form-group id="input-cmd-group" label-for="input-cmd" class="border">
         <b-form-input
           id="input-cmd"
           v-model="cmd"
@@ -46,23 +35,29 @@
         ></b-form-input>
       </b-form-group>
     </b-form>
+    <b-button variant="secondary" v-on:click="clearText()">
+      Clear console
+    </b-button>
     <b-button-group>
-      <b-button
-        v-if="is_on"
-        variant="outline-danger"
-        v-on:click="goRefreshContainer()"
-      >
-        goRefresh
-      </b-button>
+      <ContainerBtn
+        :container_id="container.Id"
+        :host_id="host_id"
+        :container_state="container.State.Status"
+      ></ContainerBtn>
       <b-button v-if="is_on" variant="warning" v-on:click="goRestart()">
         Restart
       </b-button>
+
+      <b-button variant="info" v-on:click="goStats()"> Stats </b-button>
+      <b-button variant="info" v-on:click="goTop()"> Top </b-button>
+      <b-button variant="info" v-on:click="goLogs()"> Logs </b-button>
+      <b-button class="mx-2" variant="warning" v-on:click="goKill()">
+        Kill
+      </b-button>
+      <b-button class="mx-2" variant="danger" v-on:click="goDelete()">
+        Delete
+      </b-button>
     </b-button-group>
-    <ContainerBtn
-      :container_id="container.Id"
-      :host_id="host_id"
-      :container_state="container.State.Status"
-    ></ContainerBtn>
   </div>
 </template>
 
@@ -104,7 +99,7 @@ export default {
       },
       cmd: "",
       cmd_text: "",
-      container: {},
+      container: null,
       image: {}
     };
   },
@@ -120,7 +115,6 @@ export default {
       })
         .then((response) => {
           this.container = response.data.data;
-          console.log(this.container);
         })
         .catch((error) => {
           console.log(error);
@@ -144,18 +138,15 @@ export default {
     goRefreshContainer: function () {
       this.goContainerDeatil();
     },
-    getYaml: function (data) {
-      console.log("data", data);
-    },
     goKill: function () {
       this.executeHost({
         id: this.host_id,
         data: {
           command: "api.kill",
-          args: { container: this.container.Id }
+          args: { container: this.container_id }
         }
       }).then(() => {
-        console.log("rename");
+        this.goRefreshContainer();
       });
     },
     goStats: function () {
@@ -163,10 +154,15 @@ export default {
         id: this.host_id,
         data: {
           command: "api.stats",
-          args: { container: this.container.Id }
+          args: { container: this.container_id, stream: false }
         }
-      }).then(() => {
-        console.log("rename");
+      }).then((response) => {
+        this.cmd_text += JSON.stringify({
+          cpu: response.data.data.cpu_stats.online_cpus,
+          memory: response.data.data.memory_stats.usage,
+          network: response.data.data.networks
+        });
+        this.cmd_text += "\n";
       });
     },
     goTop: function () {
@@ -174,10 +170,11 @@ export default {
         id: this.host_id,
         data: {
           command: "api.top",
-          args: { container: this.container.Id }
+          args: { container: this.container_id }
         }
-      }).then(() => {
-        console.log("rename");
+      }).then((response) => {
+        this.cmd_text += JSON.stringify(response.data.data);
+        this.cmd_text += "\n";
       });
     },
     goLogs: function () {
@@ -185,39 +182,45 @@ export default {
         id: this.host_id,
         data: {
           command: "api.logs",
-          args: { container: this.container.Id }
+          args: { container: this.container_id }
         }
-      }).then(() => {
-        console.log("rename");
+      }).then((response) => {
+        this.cmd_text += JSON.stringify(response.data.data);
+        this.cmd_text += "\n";
       });
     },
-    goRename: function () {
-      this.executeHost({
-        id: this.host_id,
-        data: {
-          command: "api.logs",
-          args: { container: this.container.Id }
-        }
-      }).then(() => {
-        console.log("rename");
-      });
+    clearText: function () {
+      this.cmd_text = "";
     },
-    goRemoveMe: function (volumes, link, force) {
+    // goRename: function () {
+    //   this.executeHost({
+    //     id: this.host_id,
+    //     data: {
+    //       command: "api.logs",
+    //       args: { container: this.container_id }
+    //     }
+    //   }).then(() => {
+    //     console.log("rename");
+    //   });
+    // },
+    goDelete: function (volumes, link, force) {
       console.log(volumes, link, force);
       this.executeHost({
         id: this.host_id,
         data: {
           command: "api.remove_container",
-          args: { container: this.container.Id }
+          args: { container: this.container_id }
         }
       }).then(() => {
-        console.log("rename");
+        this.$router.push({
+          name: "HostDockerContainer",
+          params: { id: this.host_id }
+        });
       });
     }
   },
   mounted() {
     this.goRefreshContainer();
-    console.log("hio", this.container);
   }
 };
 </script>
