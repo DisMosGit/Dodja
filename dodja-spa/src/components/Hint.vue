@@ -1,5 +1,5 @@
 <template>
-  <b-card :title="hint.key" class="text-center">
+  <b-card :title="hint.title" class="text-center">
     <b-card-sub-title class="mb-2">{{
       hint.date_updated | toDate
     }}</b-card-sub-title>
@@ -21,7 +21,7 @@ export default {
   props: ["hint"],
   methods: {
     ...mapMutations(["deleteHintByKey"]),
-    deleteMe: function() {
+    deleteMe: function () {
       this.deleteHintByKey(this.hint.key);
     }
   }
