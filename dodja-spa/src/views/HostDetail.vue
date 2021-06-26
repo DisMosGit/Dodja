@@ -1,7 +1,9 @@
 <template>
   <b-container>
     <div v-if="host">
-      <h1 class="text-center">{{ host.title }}</h1>
+      <h1 class="text-center">
+        {{ host.title }}<HintBtn hint_key="ru_host_deatil"></HintBtn>
+      </h1>
       <b-button @click="goRefreshHost" variant="primary"
         >{{ $t("refresh") | capitalize }} {{ $tc("host") }}</b-button
       >
@@ -43,23 +45,23 @@ export default {
     };
   },
   computed: {
-    host_id: function() {
+    host_id: function () {
       return this.$route.params.id;
     }
   },
   methods: {
     ...mapActions(["getHostDetail"]),
     ...mapMutations(["setMsg"]),
-    goRefreshHost: function() {
+    goRefreshHost: function () {
       return this.getHostDetail({ id: this.host_id })
-        .then(response => {
+        .then((response) => {
           this.host = response.data;
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     },
-    updateHostData: function(host) {
+    updateHostData: function (host) {
       this.host = host;
     }
   },

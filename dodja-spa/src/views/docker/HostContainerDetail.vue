@@ -10,6 +10,15 @@
       <b-badge variant="light">{{ container.Created | toDate }}</b-badge>
     </h2>
     <hr class="my-2" />
+    <p>image: {{ container.Image }}</p>
+    <p>restarts: {{ container.RestartCount }}</p>
+    <p
+      class="text-break m-0"
+      v-for="(mount, key) in container.Mounts"
+      v-bind:key="key"
+    >
+      {{ mount.Source }}->{{ mount.Destination }}:{{ mount.Mode }}
+    </p>
     <!-- <p>
       {{ container.Ports | dockerPorts }}
     </p>
@@ -67,13 +76,13 @@ export default {
     ContainerBtn: ContainerBtn
   },
   computed: {
-    container_id: function() {
+    container_id: function () {
       return this.$route.params.obj;
     },
-    host_id: function() {
+    host_id: function () {
       return this.$route.params.id;
     },
-    is_on: function() {
+    is_on: function () {
       switch (this.container.State) {
         case "running":
         case "restarting":
@@ -95,7 +104,7 @@ export default {
       },
       cmd: "",
       cmd_text: "",
-      container: null,
+      container: {},
       image: {}
     };
   },
@@ -109,10 +118,11 @@ export default {
           args: { container: this.container_id }
         }
       })
-        .then(response => {
+        .then((response) => {
           this.container = response.data.data;
+          console.log(this.container);
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     },
@@ -124,20 +134,20 @@ export default {
           args: { image: this.container.Image }
         }
       })
-        .then(response => {
+        .then((response) => {
           this.image = response.data.data;
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     },
-    goRefreshContainer: function() {
+    goRefreshContainer: function () {
       this.goContainerDeatil();
     },
-    getYaml: function(data) {
+    getYaml: function (data) {
       console.log("data", data);
     },
-    goKill: function() {
+    goKill: function () {
       this.executeHost({
         id: this.host_id,
         data: {
@@ -148,7 +158,7 @@ export default {
         console.log("rename");
       });
     },
-    goStats: function() {
+    goStats: function () {
       this.executeHost({
         id: this.host_id,
         data: {
@@ -159,7 +169,7 @@ export default {
         console.log("rename");
       });
     },
-    goTop: function() {
+    goTop: function () {
       this.executeHost({
         id: this.host_id,
         data: {
@@ -170,7 +180,7 @@ export default {
         console.log("rename");
       });
     },
-    goLogs: function() {
+    goLogs: function () {
       this.executeHost({
         id: this.host_id,
         data: {
@@ -181,7 +191,7 @@ export default {
         console.log("rename");
       });
     },
-    goRename: function() {
+    goRename: function () {
       this.executeHost({
         id: this.host_id,
         data: {
@@ -192,7 +202,7 @@ export default {
         console.log("rename");
       });
     },
-    goRemoveMe: function(volumes, link, force) {
+    goRemoveMe: function (volumes, link, force) {
       console.log(volumes, link, force);
       this.executeHost({
         id: this.host_id,
@@ -207,6 +217,7 @@ export default {
   },
   mounted() {
     this.goRefreshContainer();
+    console.log("hio", this.container);
   }
 };
 </script>

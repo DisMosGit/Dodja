@@ -1,7 +1,8 @@
 <template>
-  <b-container class="my-2 p-2 shadow-sm ">
+  <b-container class="my-2 p-2 shadow-sm">
     <h2 class="text-center">
-      {{ $tc("access", 1) | capitalize }}
+      {{ $tc("access", 1) | capitalize
+      }}<HintBtn hint_key="ru_host_access"></HintBtn>
       <b-badge @click="goRefreshAccess">
         <b-icon-arrow-repeat></b-icon-arrow-repeat>
       </b-badge>
@@ -89,11 +90,11 @@ export default {
     ]),
     goRefreshAccess() {
       return this.getAccessList({ host_id: this.host_id })
-        .then(response => {
+        .then((response) => {
           this.accesses = response.data;
           this.refreshChoice();
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     },
@@ -109,7 +110,7 @@ export default {
           .then(() => {
             this.goRefreshAccess();
           })
-          .catch(error => {
+          .catch((error) => {
             this.setMsg("Введите данные: " + JSON.stringify(error.data.detail));
           });
       }
@@ -127,7 +128,7 @@ export default {
           .then(() => {
             this.goRefreshAccess();
           })
-          .catch(error => {
+          .catch((error) => {
             this.setMsg("Введите данные: " + JSON.stringify(error.data.detail));
           });
       }
@@ -140,14 +141,14 @@ export default {
         .then(() => {
           this.goRefreshAccess();
         })
-        .catch(error => {
+        .catch((error) => {
           this.setMsg("Введите данные: " + JSON.stringify(error.data.detail));
         });
     },
     tryRefreshUserList() {
       this.getUserList({
         params: { not_host_id: this.host_id }
-      }).then(response => {
+      }).then((response) => {
         this.users = response.data;
       });
     },

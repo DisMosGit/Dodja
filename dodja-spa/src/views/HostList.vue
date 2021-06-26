@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h1 class="text-center">{{ $tc("host", 2) | capitalize }}</h1>
+    <h1 class="text-center">
+      {{ $tc("host", 2) | capitalize
+      }}<HintBtn hint_key="ru_host_list"></HintBtn>
+    </h1>
     <div class="d-flex justify-content-center">
       <b-button variant="success" v-on:click="goCreate()">
         {{ $tc("add") | capitalize }}
@@ -37,17 +40,17 @@ export default {
   methods: {
     ...mapActions(["getHostList"]),
     ...mapMutations(["setMsg"]),
-    goCreate: function() {
+    goCreate: function () {
       this.$router.push({ name: "HostCreate" });
     }
   },
   mounted() {
     this.getHostList({})
-      .then(response => {
+      .then((response) => {
         console.log(response);
         this.hosts = response.data;
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   }

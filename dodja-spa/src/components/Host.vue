@@ -3,7 +3,7 @@
     <h2 class="text-center">
       <b-badge variant="light">{{ host.id | cut(0, 8) }}</b-badge>
       {{ host.title }}
-      <HintBtn v-bind:hint_key="'test'"></HintBtn>
+      <HintBtn v-bind:hint_key="'ru_host'"></HintBtn>
     </h2>
     <p>{{ host.description | cut(0, 40) }}</p>
     <hr class="my-2" />
@@ -27,13 +27,13 @@ export default {
   },
   props: ["host", "docker"],
   methods: {
-    goDetail: function() {
+    goDetail: function () {
       this.$router.push({
         name: "HostDetail",
         params: { id: this.host.id }
       });
     },
-    goDocker: function() {
+    goDocker: function () {
       this.$router.push({
         name: "HostDocker",
         params: { id: this.host.id }

@@ -2,8 +2,8 @@
   <b-jumbotron border-variant="dark" class="col-md-auto m-1 p-1 shadow-sm">
     <h2 class="text-break">
       <b-badge :variant="this.colors[container.State]">
-        {{ container.Id | cut(0, 10) }}
-      </b-badge>
+        {{ container.Id | cut(0, 10) }} </b-badge
+      ><HintBtn hint_key="ru_host_container"></HintBtn>
       <p
         class="text-break m-0"
         v-for="name in container.Names"
@@ -18,21 +18,23 @@
       {{ container.Image | cut(0, 32) }}: {{ container.ImageID | cut(0, 20) }}
     </p>
     <hr class="my-2" />
-    <p class="text-break m-0" v-for="port in container.Ports" v-bind:key="port">
+    <p
+      class="text-break m-0"
+      v-for="(port, key) in container.Ports"
+      v-bind:key="key"
+    >
       {{ port.PrivatePort }}->{{ port.IP }}:{{ port.PublicPort }}
     </p>
     <p
       class="text-break m-0"
-      v-for="mount in container.Mounts"
-      v-bind:key="mount"
+      v-for="(mount, key) in container.Mounts"
+      v-bind:key="key"
     >
       {{ mount.Source }}->{{ mount.Destination }}
     </p>
     <hr class="my-2" />
     <b-button-group>
-      <b-button variant="primary" v-on:click="goDetail()">
-        Detail
-      </b-button>
+      <b-button variant="primary" v-on:click="goDetail()"> Detail </b-button>
       <b-button variant="secondary" v-on:click="goRefreshContainer()">
         Refresh
       </b-button>
@@ -69,7 +71,7 @@ export default {
     };
   },
   computed: {
-    is_on: function() {
+    is_on: function () {
       switch (this.container.State) {
         case "running":
         case "restarting":
@@ -81,7 +83,7 @@ export default {
   },
   methods: {
     ...mapActions(["executeHost"]),
-    goDetail: function() {
+    goDetail: function () {
       this.$router.push({
         name: "HostContainerDetail",
         params: {
@@ -92,7 +94,7 @@ export default {
         props: true
       });
     },
-    goRefreshContainer: function() {
+    goRefreshContainer: function () {
       this.$parent.goRefreshFilters({ id: this.container.Id });
     }
   }

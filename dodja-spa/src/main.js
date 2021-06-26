@@ -13,41 +13,44 @@ import HintBtn from "@/components/HintBtn";
 Vue.use(VueI18n);
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
-Vue.filter("cut", function(value, from, to) {
+Vue.filter("cut", function (value, from, to) {
   return String(value).slice(from, to);
 });
 
-Vue.filter("dockerNames", function(value) {
+Vue.filter("dockerNames", function (value) {
   var result = "";
   if (value) {
-    value.forEach(function(entry) {
+    value.forEach(function (entry) {
       result += `${entry.slice(1)}; `;
     });
   }
   return result;
 });
 
-Vue.filter("dockerPorts", function(value) {
+Vue.filter("dockerPorts", function (value) {
   var result = "";
   if (value) {
-    value.forEach(function(entry) {
+    value.forEach(function (entry) {
       result += `${entry.IP}:${entry.PublicPort}->${entry.PrivatePort}; `;
     });
   }
   return result;
 });
 
-Vue.filter("dockerMounts", function(value) {
+Vue.filter("dockerMounts", function (value) {
   var result = "";
   if (value) {
-    value.forEach(function(entry) {
+    value.forEach(function (entry) {
       result += `${entry.Destination}:${entry.Source || "~/"}; `;
     });
   }
   return result;
 });
 
-Vue.filter("toDate", function(value, type) {
+Vue.filter("toDate", function (value, type) {
+  if (type == null) {
+    type = " ";
+  }
   if (type[0] === "m") {
     value = new Date(value * 1000);
   } else {
@@ -65,20 +68,20 @@ Vue.filter("toDate", function(value, type) {
   }
 });
 
-Vue.filter("getValue", function(value, find_key) {
-  return Object.keys(value).find(key => value[key] === find_key);
+Vue.filter("getValue", function (value, find_key) {
+  return Object.keys(value).find((key) => value[key] === find_key);
 });
 
-Vue.filter("mergeR", function(value, str) {
+Vue.filter("mergeR", function (value, str) {
   return String(value) + String(str);
 });
 
-Vue.filter("mergeL", function(value, str) {
+Vue.filter("mergeL", function (value, str) {
   return String(str) + String(value);
 });
 
-Vue.filter("capitalize", function(value) {
-  return value.replace(/^./, c => c.toUpperCase());
+Vue.filter("capitalize", function (value) {
+  return value.replace(/^./, (c) => c.toUpperCase());
 });
 
 Vue.config.productionTip = false;
@@ -176,5 +179,5 @@ new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: (h) => h(App)
 }).$mount("#app");
